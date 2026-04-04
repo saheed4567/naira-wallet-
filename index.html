@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naira Wallet + Savings Goal</title>
+    <style>
+        body { background-color: #121212; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
+        #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+        .card { background: #1e1e1e; padding: 25px; border-radius: 20px; width: 280px; text-align: center; border: 1px solid #333; margin-bottom: 20px; }
+        h1 { color: #4caf50; margin: 5px 0; }
+        input { width: 85%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: white; text-align: center; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; }
+        #dep-btn { background: #2e7d32; color: white; }
+        #wit-btn { background: #c62828; color: white; }
+        #login-btn { background: #4caf50; color: white; width: 100%; margin-top: 10px; }
+        #toggle-btn { background: none; border: none; color: #888; cursor: pointer; font-size: 0.8rem; margin-bottom: 10px; }
+        ul { list-style: none; padding: 0; text-align: left; }
+        li { border-bottom: 1px solid #333; padding: 10px 0; font-size: 0.85rem; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+
+    <div id="lock-screen">
+        <div class="card">
+            <h2 style="color: #4caf50;">Locked</h2>
+            <input type="password" id="pin-input" maxlength="4" placeholder="****" style="letter-spacing: 8px; font-size: 2rem;">
+            <button class="btn" id="login-btn">Unlock Wallet</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div style="margin-bottom: 20px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #888; text-transform: uppercase;">
+                <span>Target: ₦5,000</span>
+                <span id="goal-percent">0%</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: #333; border-radius: 10px; margin-top: 5px; overflow: hidden;">
+                <div id="goal-bar" style="width: 0%; height: 100%; background: #4caf50; transition: width 0.8s ease;"></div>
+            </div>
+        </div>
+
+        <small style="color: #888;">Available Balance</small>
+        <h1 id="bal">₦100.00</h1>
+        <button id="toggle-btn">👁️ Hide Balance</button>
+        <input type="number" id="amt" placeholder="Amount (₦)">
+        <div class="btn-group">
+            <button class="btn" id="dep-btn">Deposit</button>
+            <button class="btn" id="wit-btn">Withdraw</button>
+        </div>
+        <button id="reset-btn" style="background: none; border: none; color: #f44336; cursor: pointer; font-size: 0.7rem; margin-top:15px; text-decoration: underline;">Reset All Data</button>
+    </div>
+
+    <div class="card" style="max-height: 200px; overflow-y: auto;">
+        <small style="color: #888; display: block; margin-bottom: 10px;">Recent Activity</small>
+        <ul id="history-list"></ul>
+    </div>
+
+    <script>
+        const lockScreen = document.getElementById('lock-screen');
+        const pinInput = document.getElementById('pin-input');
+        const balanceDisplay = document.getElementById('bal');
+        const amountInput = document.getElementById('amt');
+        const historyList = document.getElementById('history-list');
+
+        const SECRET_PIN = "1234"; 
+        let money = parseFloat(localStorage.getItem('wallet_balance')) || 100.00;
+        let transactions = JSON.parse(localStorage.getItem('wallet_history')) || [];
+        let isHidden = false;
+
+        document.getElementById('login-btn').onclick = () => {
+            if (pinInput.value === SECRET_PIN) lockScreen.style.display = "none";
+            else { alert("Incorrect PIN!"); pinInput.value = ""; }
+        };
+
+        function updateApp(type, amt) {
+            if (type && amt) {
+                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                transactions.unshift({ type, amt, time });
+                if (transactions.length > 5) transactions.pop();
+                localStorage.setItem('wallet_history', JSON.stringify(transactions));
+            }
+            
+            localStorage.setItem('wallet_balance', money);
+            balanceDisplay.innerText = isHidden ? "₦ ****.**" : "₦" + money.toFixed(2);
+            
+            // Goal Logic
+            const target = 5000;
+            let p = Math.min((money / target) * 100, 100);
+            document.getElementById('goal-bar').style.width = p + "%";
+            document.getElementById('goal-percent').innerText = Math.floor(p) + "%";
+
+            historyList.innerHTML = "";
+            transactions.forEach(t => {
+                const color = t.type === "Deposit" ? "#4caf50" : "#f44336";
+                historyList.innerHTML += `<li><span style="color:${color}">${t.type}</span> <span>₦${t.amt.toFixed(2)} <small style="color:#666">${t.time}</small></span></li>`;
+            });
+            amountInput.value = "";
+        }
+
+        document.getElementById('toggle-btn').onclick = () => { isHidden = !isHidden; updateApp(); };
+
+        document.getElementById('dep-btn').onclick = () => {
+            let val = parseFloat(amountInput.value);
+            if(isNaN(val) || val <= 0) return;
+            money += val;
+            updateApp("Deposit", val);
+        };
+
+        document.getElementById('wit-btn').onclick = () => {
+            let val = parseFloat(amountInput.value);
+            if(isNaN(val) || val <= 0 || val > money) return alert("Error");
+            money -= val;
+            updateApp("Withdraw", val);
+        };
+
+        document.getElementById('reset-btn').onclick = () => {
+            if (confirm("Reset everything?")) { localStorage.clear(); location.reload(); }
+        };
+
+        updateApp();
+    </script>
+</body>
+</html>
+
