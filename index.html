@@ -1,125 +1,145 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Naira Wallet + Savings Goal</title>
+    <title>Naira Bank Pro</title>
     <style>
-        body { background-color: #121212; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
-        #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
-        .card { background: #1e1e1e; padding: 25px; border-radius: 20px; width: 280px; text-align: center; border: 1px solid #333; margin-bottom: 20px; }
-        h1 { color: #4caf50; margin: 5px 0; }
-        input { width: 85%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: white; text-align: center; }
-        .btn-group { display: flex; gap: 10px; }
-        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; }
-        #dep-btn { background: #2e7d32; color: white; }
-        #wit-btn { background: #c62828; color: white; }
-        #login-btn { background: #4caf50; color: white; width: 100%; margin-top: 10px; }
-        #toggle-btn { background: none; border: none; color: #888; cursor: pointer; font-size: 0.8rem; margin-bottom: 10px; }
-        ul { list-style: none; padding: 0; text-align: left; }
-        li { border-bottom: 1px solid #333; padding: 10px 0; font-size: 0.85rem; display: flex; justify-content: space-between; }
+        body { background-color: #0f0f0f; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; padding-top: 20px; margin: 0; min-height: 100vh; }
+        .container { background: #1a1a1a; padding: 20px; border-radius: 25px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+        .hidden { display: none; }
+        
+        /* Balance Section */
+        .balance-card { background: linear-gradient(135deg, #1b5e20, #4caf50); padding: 30px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3); }
+        .balance-card h1 { font-size: 2.5em; margin: 10px 0; letter-spacing: 1px; }
+        
+        /* Services Grid */
+        .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .service-item { background: #262626; padding: 15px; border-radius: 15px; cursor: pointer; transition: 0.2s; border: 1px solid #333; }
+        .service-item:active { transform: scale(0.95); background: #333; }
+        .service-item span { display: block; font-size: 1.5em; margin-bottom: 5px; }
+        .service-item p { margin: 0; font-size: 0.8em; color: #bbb; }
+
+        /* Forms & Inputs */
+        input, select { width: 90%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #444; background: #121212; color: white; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-pay { background: #4caf50; color: white; }
+        
+        /* Transaction History */
+        .history-box { text-align: left; background: #222; padding: 15px; border-radius: 15px; max-height: 200px; overflow-y: auto; }
+        .history-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; font-size: 0.85em; }
     </style>
 </head>
 <body>
 
-    <div id="lock-screen">
-        <div class="card">
-            <h2 style="color: #4caf50;">Locked</h2>
-            <input type="password" id="pin-input" maxlength="4" placeholder="****" style="letter-spacing: 8px; font-size: 2rem;">
-            <button class="btn" id="login-btn">Unlock Wallet</button>
-        </div>
+    <div id="lock-screen" class="container">
+        <h2 style="color: #4caf50;">SafeBank Login</h2>
+        <p style="color: #888;">Enter your secure PIN</p>
+        <input type="password" id="pin-input" placeholder="••••" style="font-size: 2em; letter-spacing: 10px;">
+        <button class="btn btn-pay" onclick="unlock()">Unlock Account</button>
     </div>
 
-    <div class="card">
-        <div style="margin-bottom: 20px; text-align: left;">
-            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #888; text-transform: uppercase;">
-                <span>Target: ₦5,000</span>
-                <span id="goal-percent">0%</span>
-            </div>
-            <div style="width: 100%; height: 6px; background: #333; border-radius: 10px; margin-top: 5px; overflow: hidden;">
-                <div id="goal-bar" style="width: 0%; height: 100%; background: #4caf50; transition: width 0.8s ease;"></div>
-            </div>
+    <div id="main-app" class="container hidden">
+        <div class="balance-card">
+            <p style="margin:0; opacity:0.8;">Total Balance</p>
+            <h1 id="balance-display">₦0.00</h1>
+            <button onclick="addFunds()" style="background: rgba(255,255,255,0.2); border:none; color:white; padding:5px 15px; border-radius:20px; cursor:pointer;">+ Top Up</button>
         </div>
 
-        <small style="color: #888;">Available Balance</small>
-        <h1 id="bal">₦100.00</h1>
-        <button id="toggle-btn">👁️ Hide Balance</button>
-        <input type="number" id="amt" placeholder="Amount (₦)">
-        <div class="btn-group">
-            <button class="btn" id="dep-btn">Deposit</button>
-            <button class="btn" id="wit-btn">Withdraw</button>
+        <div class="services-grid">
+            <div class="service-item" onclick="showService('Airtime')"><span>📱</span><p>Airtime</p></div>
+            <div class="service-item" onclick="showService('Data')"><span>🌐</span><p>Data</p></div>
+            <div class="service-item" onclick="showService('Betting')"><span>⚽</span><p>Betting</p></div>
+            <div class="service-item" onclick="showService('Electricity')"><span>💡</span><p>Utility</p></div>
+            <div class="service-item" onclick="showService('Cable')"><span>📺</span><p>TV</p></div>
+            <div class="service-item" onclick="showService('Transfer')"><span>💸</span><p>Send</p></div>
         </div>
-        <button id="reset-btn" style="background: none; border: none; color: #f44336; cursor: pointer; font-size: 0.7rem; margin-top:15px; text-decoration: underline;">Reset All Data</button>
-    </div>
 
-    <div class="card" style="max-height: 200px; overflow-y: auto;">
-        <small style="color: #888; display: block; margin-bottom: 10px;">Recent Activity</small>
-        <ul id="history-list"></ul>
+        <div id="service-form" class="hidden" style="background:#262626; padding:20px; border-radius:20px; margin-bottom:20px;">
+            <h3 id="service-title" style="margin-top:0;">Service</h3>
+            <input type="number" id="service-amount" placeholder="Amount (₦)">
+            <input type="text" id="service-target" placeholder="Phone Number / User ID">
+            <select id="service-provider">
+                <option value="MTN">MTN</option>
+                <option value="Airtel">Airtel</option>
+                <option value="Glo">Glo</option>
+                <option value="9mobile">9mobile</option>
+                <option value="SportyBet">SportyBet</option>
+                <option value="Bet9ja">Bet9ja</option>
+            </select>
+            <button class="btn btn-pay" onclick="processPayment()">Confirm Payment</button>
+            <button onclick="hideService()" style="background:none; border:none; color:#ff5252; margin-top:10px; cursor:pointer;">Cancel</button>
+        </div>
+
+        <h3 style="text-align:left;">Recent Activities</h3>
+        <div id="history" class="history-box"></div>
+        
+        <button onclick="location.reload()" style="background:none; border:none; color:#555; margin-top:20px;">Logout</button>
     </div>
 
     <script>
-        const lockScreen = document.getElementById('lock-screen');
-        const pinInput = document.getElementById('pin-input');
-        const balanceDisplay = document.getElementById('bal');
-        const amountInput = document.getElementById('amt');
-        const historyList = document.getElementById('history-list');
+        let balance = parseFloat(localStorage.getItem('bankBalance')) || 5000; // Start with 5k for testing
+        let history = JSON.parse(localStorage.getItem('bankHistory')) || [];
+        let currentService = "";
 
-        const SECRET_PIN = "1234"; 
-        let money = parseFloat(localStorage.getItem('wallet_balance')) || 100.00;
-        let transactions = JSON.parse(localStorage.getItem('wallet_history')) || [];
-        let isHidden = false;
-
-        document.getElementById('login-btn').onclick = () => {
-            if (pinInput.value === SECRET_PIN) lockScreen.style.display = "none";
-            else { alert("Incorrect PIN!"); pinInput.value = ""; }
-        };
-
-        function updateApp(type, amt) {
-            if (type && amt) {
-                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                transactions.unshift({ type, amt, time });
-                if (transactions.length > 5) transactions.pop();
-                localStorage.setItem('wallet_history', JSON.stringify(transactions));
-            }
-            
-            localStorage.setItem('wallet_balance', money);
-            balanceDisplay.innerText = isHidden ? "₦ ****.**" : "₦" + money.toFixed(2);
-            
-            // Goal Logic
-            const target = 5000;
-            let p = Math.min((money / target) * 100, 100);
-            document.getElementById('goal-bar').style.width = p + "%";
-            document.getElementById('goal-percent').innerText = Math.floor(p) + "%";
-
-            historyList.innerHTML = "";
-            transactions.forEach(t => {
-                const color = t.type === "Deposit" ? "#4caf50" : "#f44336";
-                historyList.innerHTML += `<li><span style="color:${color}">${t.type}</span> <span>₦${t.amt.toFixed(2)} <small style="color:#666">${t.time}</small></span></li>`;
-            });
-            amountInput.value = "";
+        function updateUI() {
+            document.getElementById('balance-display').innerText = `₦${balance.toLocaleString()}`;
+            const historyDiv = document.getElementById('history');
+            historyDiv.innerHTML = history.length ? history.map(item => `
+                <div class="history-item">
+                    <div><b>${item.service}</b><br><small style="color:#888;">${item.target}</small></div>
+                    <div style="color:#ff5252;">-₦${item.amount}</div>
+                </div>
+            `).join('') : '<p style="text-align:center; color:#555;">No transactions</p>';
         }
 
-        document.getElementById('toggle-btn').onclick = () => { isHidden = !isHidden; updateApp(); };
+        function unlock() {
+            if(document.getElementById('pin-input').value === "1234") {
+                document.getElementById('lock-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                updateUI();
+            } else { alert("Wrong PIN"); }
+        }
 
-        document.getElementById('dep-btn').onclick = () => {
-            let val = parseFloat(amountInput.value);
-            if(isNaN(val) || val <= 0) return;
-            money += val;
-            updateApp("Deposit", val);
-        };
+        function showService(name) {
+            currentService = name;
+            document.getElementById('service-title').innerText = name + " Payment";
+            document.getElementById('service-form').classList.remove('hidden');
+            document.getElementById('service-target').placeholder = (name === 'Betting') ? "User ID" : "Phone / Account Number";
+        }
 
-        document.getElementById('wit-btn').onclick = () => {
-            let val = parseFloat(amountInput.value);
-            if(isNaN(val) || val <= 0 || val > money) return alert("Error");
-            money -= val;
-            updateApp("Withdraw", val);
-        };
+        function hideService() { document.getElementById('service-form').classList.add('hidden'); }
 
-        document.getElementById('reset-btn').onclick = () => {
-            if (confirm("Reset everything?")) { localStorage.clear(); location.reload(); }
-        };
+        function addFunds() {
+            let amount = prompt("Enter amount to deposit (₦):");
+            if(amount > 0) {
+                balance += parseFloat(amount);
+                localStorage.setItem('bankBalance', balance);
+                updateUI();
+            }
+        }
 
-        updateApp();
+        function processPayment() {
+            const amt = parseFloat(document.getElementById('service-amount').value);
+            const target = document.getElementById('service-target').value;
+            const provider = document.getElementById('service-provider').value;
+
+            if(!amt || !target) return alert("Fill all fields");
+            if(amt > balance) return alert("Insufficient Balance!");
+
+            balance -= amt;
+            history.unshift({ service: currentService + " (" + provider + ")", amount: amt.toLocaleString(), target: target });
+            if(history.length > 10) history.pop();
+
+            localStorage.setItem('bankBalance', balance);
+            localStorage.setItem('bankHistory', JSON.stringify(history));
+            
+            hideService();
+            updateUI();
+            alert("Payment Successful!");
+        }
     </script>
 </body>
 </html>
+
 
