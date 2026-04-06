@@ -3,29 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Naira Bank Pro</title>
+    <title>Naira Bank Pro + Privacy</title>
     <style>
-        body { background-color: #0f0f0f; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; padding-top: 20px; margin: 0; min-height: 100vh; }
+        body { background-color: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding-top: 20px; margin: 0; min-height: 100vh; }
         .container { background: #1a1a1a; padding: 20px; border-radius: 25px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
         .hidden { display: none; }
         
-        /* Balance Section */
-        .balance-card { background: linear-gradient(135deg, #1b5e20, #4caf50); padding: 30px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3); }
-        .balance-card h1 { font-size: 2.5em; margin: 10px 0; letter-spacing: 1px; }
+        /* Balance Card with Eye Icon */
+        .balance-card { background: linear-gradient(135deg, #1b5e20, #4caf50); padding: 30px; border-radius: 20px; margin-bottom: 20px; position: relative; }
+        .eye-icon { position: absolute; top: 15px; right: 20px; font-size: 1.2em; cursor: pointer; opacity: 0.8; }
+        .balance-card h1 { font-size: 2.3em; margin: 10px 0; }
         
         /* Services Grid */
         .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
-        .service-item { background: #262626; padding: 15px; border-radius: 15px; cursor: pointer; transition: 0.2s; border: 1px solid #333; }
-        .service-item:active { transform: scale(0.95); background: #333; }
+        .service-item { background: #262626; padding: 15px; border-radius: 15px; cursor: pointer; border: 1px solid #333; }
         .service-item span { display: block; font-size: 1.5em; margin-bottom: 5px; }
         .service-item p { margin: 0; font-size: 0.8em; color: #bbb; }
 
-        /* Forms & Inputs */
         input, select { width: 90%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #444; background: #121212; color: white; }
         .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-pay { background: #4caf50; color: white; }
         
-        /* Transaction History */
         .history-box { text-align: left; background: #222; padding: 15px; border-radius: 15px; max-height: 200px; overflow-y: auto; }
         .history-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; font-size: 0.85em; }
     </style>
@@ -34,56 +32,53 @@
 
     <div id="lock-screen" class="container">
         <h2 style="color: #4caf50;">SafeBank Login</h2>
-        <p style="color: #888;">Enter your secure PIN</p>
-        <input type="password" id="pin-input" placeholder="••••" style="font-size: 2em; letter-spacing: 10px;">
+        <input type="password" id="pin-input" placeholder="••••" style="font-size: 2em; letter-spacing: 10px; text-align: center;">
         <button class="btn btn-pay" onclick="unlock()">Unlock Account</button>
     </div>
 
     <div id="main-app" class="container hidden">
         <div class="balance-card">
+            <div class="eye-icon" onclick="toggleBalance()">👁️</div>
             <p style="margin:0; opacity:0.8;">Total Balance</p>
             <h1 id="balance-display">₦0.00</h1>
-            <button onclick="addFunds()" style="background: rgba(255,255,255,0.2); border:none; color:white; padding:5px 15px; border-radius:20px; cursor:pointer;">+ Top Up</button>
+            <button onclick="addFunds()" style="background: rgba(255,255,255,0.2); border:none; color:white; padding:5px 15px; border-radius:20px;">+ Top Up</button>
         </div>
 
         <div class="services-grid">
             <div class="service-item" onclick="showService('Airtime')"><span>📱</span><p>Airtime</p></div>
             <div class="service-item" onclick="showService('Data')"><span>🌐</span><p>Data</p></div>
             <div class="service-item" onclick="showService('Betting')"><span>⚽</span><p>Betting</p></div>
-            <div class="service-item" onclick="showService('Electricity')"><span>💡</span><p>Utility</p></div>
-            <div class="service-item" onclick="showService('Cable')"><span>📺</span><p>TV</p></div>
-            <div class="service-item" onclick="showService('Transfer')"><span>💸</span><p>Send</p></div>
+            <div class="service-item" onclick="showService('Utility')"><span>💡</span><p>Utility</p></div>
+            <div class="service-item" onclick="showService('TV')"><span>📺</span><p>TV</p></div>
+            <div class="service-item" onclick="showService('Send')"><span>💸</span><p>Send</p></div>
         </div>
 
         <div id="service-form" class="hidden" style="background:#262626; padding:20px; border-radius:20px; margin-bottom:20px;">
             <h3 id="service-title" style="margin-top:0;">Service</h3>
             <input type="number" id="service-amount" placeholder="Amount (₦)">
-            <input type="text" id="service-target" placeholder="Phone Number / User ID">
-            <select id="service-provider">
-                <option value="MTN">MTN</option>
-                <option value="Airtel">Airtel</option>
-                <option value="Glo">Glo</option>
-                <option value="9mobile">9mobile</option>
-                <option value="SportyBet">SportyBet</option>
-                <option value="Bet9ja">Bet9ja</option>
-            </select>
+            <input type="text" id="service-target" placeholder="Recipient Details">
             <button class="btn btn-pay" onclick="processPayment()">Confirm Payment</button>
-            <button onclick="hideService()" style="background:none; border:none; color:#ff5252; margin-top:10px; cursor:pointer;">Cancel</button>
+            <button onclick="hideService()" style="background:none; border:none; color:#ff5252; margin-top:10px;">Cancel</button>
         </div>
 
         <h3 style="text-align:left;">Recent Activities</h3>
         <div id="history" class="history-box"></div>
-        
         <button onclick="location.reload()" style="background:none; border:none; color:#555; margin-top:20px;">Logout</button>
     </div>
 
     <script>
-        let balance = parseFloat(localStorage.getItem('bankBalance')) || 5000; // Start with 5k for testing
+        let balance = parseFloat(localStorage.getItem('bankBalance')) || 5000;
         let history = JSON.parse(localStorage.getItem('bankHistory')) || [];
+        let isHidden = false;
         let currentService = "";
 
         function updateUI() {
-            document.getElementById('balance-display').innerText = `₦${balance.toLocaleString()}`;
+            if (isHidden) {
+                document.getElementById('balance-display').innerText = "₦ ••••";
+            } else {
+                document.getElementById('balance-display').innerText = `₦${balance.toLocaleString()}`;
+            }
+            
             const historyDiv = document.getElementById('history');
             historyDiv.innerHTML = history.length ? history.map(item => `
                 <div class="history-item">
@@ -91,6 +86,11 @@
                     <div style="color:#ff5252;">-₦${item.amount}</div>
                 </div>
             `).join('') : '<p style="text-align:center; color:#555;">No transactions</p>';
+        }
+
+        function toggleBalance() {
+            isHidden = !isHidden;
+            updateUI();
         }
 
         function unlock() {
@@ -105,7 +105,6 @@
             currentService = name;
             document.getElementById('service-title').innerText = name + " Payment";
             document.getElementById('service-form').classList.remove('hidden');
-            document.getElementById('service-target').placeholder = (name === 'Betting') ? "User ID" : "Phone / Account Number";
         }
 
         function hideService() { document.getElementById('service-form').classList.add('hidden'); }
@@ -122,24 +121,19 @@
         function processPayment() {
             const amt = parseFloat(document.getElementById('service-amount').value);
             const target = document.getElementById('service-target').value;
-            const provider = document.getElementById('service-provider').value;
-
-            if(!amt || !target) return alert("Fill all fields");
-            if(amt > balance) return alert("Insufficient Balance!");
+            if(!amt || !target || amt > balance) return alert("Error with balance or input");
 
             balance -= amt;
-            history.unshift({ service: currentService + " (" + provider + ")", amount: amt.toLocaleString(), target: target });
-            if(history.length > 10) history.pop();
-
+            history.unshift({ service: currentService, amount: amt.toLocaleString(), target: target });
             localStorage.setItem('bankBalance', balance);
             localStorage.setItem('bankHistory', JSON.stringify(history));
-            
             hideService();
             updateUI();
-            alert("Payment Successful!");
+            alert("Success!");
         }
     </script>
 </body>
 </html>
+
 
 
