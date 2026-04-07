@@ -8,15 +8,24 @@
         body { background-color: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding-top: 20px; margin: 0; min-height: 100vh; }
         .container { background: #1a1a1a; padding: 20px; border-radius: 25px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
         .hidden { display: none; }
+        
+        /* Balance Card */
         .balance-card { background: linear-gradient(135deg, #1b5e20, #4caf50); padding: 30px; border-radius: 20px; margin-bottom: 20px; position: relative; }
         .eye-icon { position: absolute; top: 15px; right: 20px; font-size: 1.2em; cursor: pointer; opacity: 0.8; }
+        
+        /* Services Grid */
         .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
         .service-item { background: #262626; padding: 15px; border-radius: 15px; cursor: pointer; border: 1px solid #333; transition: 0.2s; }
         .service-item:active { background: #4caf50; }
         .service-item p { margin: 0; font-size: 0.8em; color: #bbb; }
+
+        /* Inputs and Buttons */
         input, select { width: 90%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #444; background: #121212; color: white; box-sizing: border-box; }
         .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-pay { background: #4caf50; color: white; }
+        .btn-logout { background: transparent; color: #ff5252; border: 1px solid #ff5252; margin-top: 25px; }
+        
+        /* History */
         .history-box { text-align: left; background: #222; padding: 15px; border-radius: 15px; max-height: 200px; overflow-y: auto; }
         .history-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; font-size: 0.85em; }
     </style>
@@ -55,7 +64,7 @@
             </div>
 
             <input type="number" id="service-amount" placeholder="Amount (₦)">
-            <input type="text" id="service-target" placeholder="Account / Phone Number">
+            <input type="text" id="service-target" placeholder="Recipient Details">
             
             <input type="password" id="numeric-keyword" placeholder="Enter Transaction Key (778899)" inputmode="numeric">
             
@@ -65,7 +74,8 @@
 
         <h3 style="text-align:left;">Recent Activities</h3>
         <div id="history" class="history-box"></div>
-        <button onclick="location.reload()" style="background:none; border:none; color:#555; margin-top:20px; font-size:0.8em;">Logout</button>
+
+        <button class="btn btn-logout" onclick="logout()">Logout Securely</button>
     </div>
 
     <script>
@@ -75,7 +85,6 @@
         let isHidden = false;
         let currentService = "";
 
-        // Updated Providers lists
         const providers = {
             'Airtime': ['MTN', 'Airtel', 'Glo', '9mobile'],
             'Data': ['MTN Data', 'Airtel Data', 'Glo Data', '9mobile Data'],
@@ -103,6 +112,13 @@
             } else { alert("❌ Wrong PIN"); }
         }
 
+        function logout() {
+            // Clear input and swap screens
+            document.getElementById('pin-input').value = "";
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('lock-screen').classList.remove('hidden');
+        }
+
         function showService(name) {
             currentService = name;
             document.getElementById('service-title').innerText = name;
@@ -120,7 +136,7 @@
 
         function openDeposit() {
             currentService = "Deposit";
-            document.getElementById('service-title').innerText = "Account Top Up";
+            document.getElementById('service-title').innerText = "Top Up";
             document.getElementById('provider-section').classList.add('hidden');
             document.getElementById('service-form').classList.remove('hidden');
         }
@@ -135,7 +151,7 @@
             const provider = document.getElementById('service-provider').value;
 
             if(keyEntered !== SECRET_KEY) return alert("❌ INCORRECT SECURITY KEY!");
-            if(!amt || !target) return alert("Please fill all fields");
+            if(!amt || !target) return alert("Fill all fields");
 
             if(currentService === "Deposit") {
                 balance += amt;
@@ -148,12 +164,7 @@
 
             localStorage.setItem('bankBalance', balance);
             localStorage.setItem('bankHistory', JSON.stringify(history));
-            
-            // Reset fields
-            document.getElementById('service-amount').value = "";
-            document.getElementById('service-target').value = "";
             document.getElementById('numeric-keyword').value = "";
-            
             hideService();
             updateUI();
             alert("✅ Transaction Successful!");
@@ -161,6 +172,7 @@
     </script>
 </body>
 </html>
+
 
 
 
