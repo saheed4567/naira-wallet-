@@ -3,30 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Naira Bank Pro Max</title>
+    <title>Naira Wallet Pro</title>
     <style>
-        body { background-color: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding-top: 20px; margin: 0; min-height: 100vh; }
+        body { background-color: #121212; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding-top: 20px; margin: 0; min-height: 100vh; }
         .container { background: #1a1a1a; padding: 20px; border-radius: 25px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
         .hidden { display: none; }
         
         /* Balance Card */
         .balance-card { background: linear-gradient(135deg, #1b5e20, #4caf50); padding: 30px; border-radius: 20px; margin-bottom: 20px; position: relative; }
-        .eye-icon { position: absolute; top: 15px; right: 20px; font-size: 1.2em; cursor: pointer; opacity: 0.8; }
         
         /* Services Grid */
         .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
         .service-item { background: #262626; padding: 15px; border-radius: 15px; cursor: pointer; border: 1px solid #333; transition: 0.2s; }
-        .service-item:active { background: #4caf50; }
         .service-item p { margin: 0; font-size: 0.8em; color: #bbb; }
 
-        /* Inputs and Buttons */
+        /* Secure Inputs */
         input, select { width: 90%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #444; background: #121212; color: white; box-sizing: border-box; }
+        
+        /* Buttons */
         .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-pay { background: #4caf50; color: white; }
-        .btn-logout { background: transparent; color: #ff5252; border: 1px solid #ff5252; margin-top: 25px; }
+        .btn-logout { background: transparent; color: #ff5252; border: 1px solid #ff5252; margin-top: 20px; font-size: 0.9em; }
         
         /* History */
-        .history-box { text-align: left; background: #222; padding: 15px; border-radius: 15px; max-height: 200px; overflow-y: auto; }
+        .history-box { text-align: left; background: #222; padding: 15px; border-radius: 15px; max-height: 200px; overflow-y: auto; margin-top: 10px; }
         .history-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; font-size: 0.85em; }
     </style>
 </head>
@@ -40,7 +40,6 @@
 
     <div id="main-app" class="container hidden">
         <div class="balance-card">
-            <div class="eye-icon" onclick="toggleBalance()">👁️</div>
             <p style="margin:0; opacity:0.8;">Total Balance</p>
             <h1 id="balance-display">₦0.00</h1>
             <button onclick="openDeposit()" style="background: rgba(255,255,255,0.2); border:none; color:white; padding:5px 15px; border-radius:20px;">+ Top Up</button>
@@ -57,22 +56,15 @@
 
         <div id="service-form" class="hidden" style="background:#262626; padding:20px; border-radius:20px; margin-bottom:20px; border: 2px solid #4caf50;">
             <h3 id="service-title" style="margin-top:0;">Service</h3>
-            
-            <div id="provider-section">
-                <label style="font-size: 0.8em; color: #888;">Select Provider</label>
-                <select id="service-provider"></select>
-            </div>
-
+            <select id="service-provider"></select>
             <input type="number" id="service-amount" placeholder="Amount (₦)">
             <input type="text" id="service-target" placeholder="Recipient Details">
-            
-            <input type="password" id="numeric-keyword" placeholder="Enter Transaction Key (778899)" inputmode="numeric">
-            
-            <button class="btn btn-pay" onclick="processPayment()">Confirm Transaction</button>
+            <input type="password" id="numeric-keyword" placeholder="Enter Key (778899)" inputmode="numeric">
+            <button class="btn btn-pay" onclick="processPayment()">Confirm Payment</button>
             <button onclick="hideService()" style="background:none; border:none; color:#ff5252; margin-top:10px;">Cancel</button>
         </div>
 
-        <h3 style="text-align:left;">Recent Activities</h3>
+        <h3 style="text-align:left; margin-bottom: 5px;">Recent Activities</h3>
         <div id="history" class="history-box"></div>
 
         <button class="btn btn-logout" onclick="logout()">Logout Securely</button>
@@ -82,19 +74,17 @@
         const SECRET_KEY = "778899"; 
         let balance = parseFloat(localStorage.getItem('bankBalance')) || 5000;
         let history = JSON.parse(localStorage.getItem('bankHistory')) || [];
-        let isHidden = false;
-        let currentService = "";
 
         const providers = {
             'Airtime': ['MTN', 'Airtel', 'Glo', '9mobile'],
-            'Data': ['MTN Data', 'Airtel Data', 'Glo Data', '9mobile Data'],
-            'Betting': ['SportyBet', 'Bet9ja', '1XBet', 'BetKing'],
-            'Utility': ['IKEDC (Ikeja)', 'EKEDC (Eko)', 'KEDCO (Kano)', 'AEDC (Abuja)'],
+            'Data': ['MTN Data', 'Airtel Data', 'Glo Data'],
+            'Betting': ['SportyBet', 'Bet9ja', '1XBet'],
+            'Utility': ['IKEDC', 'EKEDC', 'KEDCO'],
             'TV': ['DSTV', 'GOTV', 'StarTimes']
         };
 
         function updateUI() {
-            document.getElementById('balance-display').innerText = isHidden ? "₦ ••••" : `₦${balance.toLocaleString()}`;
+            document.getElementById('balance-display').innerText = `₦${balance.toLocaleString()}`;
             const historyDiv = document.getElementById('history');
             historyDiv.innerHTML = history.length ? history.map(item => `
                 <div class="history-item">
@@ -109,69 +99,50 @@
                 document.getElementById('lock-screen').classList.add('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
                 updateUI();
-            } else { alert("❌ Wrong PIN"); }
+            } else { alert("Incorrect PIN"); }
         }
 
         function logout() {
-            // Clear input and swap screens
-            document.getElementById('pin-input').value = "";
+            document.getElementById('pin-input').value = ""; // Clear the PIN field
             document.getElementById('main-app').classList.add('hidden');
             document.getElementById('lock-screen').classList.remove('hidden');
         }
 
         function showService(name) {
-            currentService = name;
             document.getElementById('service-title').innerText = name;
             const providerSelect = document.getElementById('service-provider');
-            const providerSection = document.getElementById('provider-section');
-            
-            if (providers[name]) {
-                providerSection.classList.remove('hidden');
-                providerSelect.innerHTML = providers[name].map(p => `<option value="${p}">${p}</option>`).join('');
-            } else {
-                providerSection.classList.add('hidden');
-            }
-            document.getElementById('service-form').classList.remove('hidden');
-        }
-
-        function openDeposit() {
-            currentService = "Deposit";
-            document.getElementById('service-title').innerText = "Top Up";
-            document.getElementById('provider-section').classList.add('hidden');
+            providerSelect.innerHTML = (providers[name] || []).map(p => `<option value="${p}">${p}</option>`).join('');
             document.getElementById('service-form').classList.remove('hidden');
         }
 
         function hideService() { document.getElementById('service-form').classList.add('hidden'); }
-        function toggleBalance() { isHidden = !isHidden; updateUI(); }
 
         function processPayment() {
             const amt = parseFloat(document.getElementById('service-amount').value);
-            const target = document.getElementById('service-target').value;
             const keyEntered = document.getElementById('numeric-keyword').value;
-            const provider = document.getElementById('service-provider').value;
 
-            if(keyEntered !== SECRET_KEY) return alert("❌ INCORRECT SECURITY KEY!");
-            if(!amt || !target) return alert("Fill all fields");
+            if(keyEntered !== SECRET_KEY) return alert("Wrong Transaction Key!");
+            if(amt > balance) return alert("Insufficient Balance!");
 
-            if(currentService === "Deposit") {
-                balance += amt;
-                history.unshift({ service: "Deposit", amount: amt.toLocaleString(), target: target, type: 'dep' });
-            } else {
-                if(amt > balance) return alert("Insufficient Balance!");
-                balance -= amt;
-                history.unshift({ service: `${currentService} (${provider})`, amount: amt.toLocaleString(), target: target, type: 'exp' });
-            }
-
+            balance -= amt;
             localStorage.setItem('bankBalance', balance);
-            localStorage.setItem('bankHistory', JSON.stringify(history));
-            document.getElementById('numeric-keyword').value = "";
             hideService();
             updateUI();
-            alert("✅ Transaction Successful!");
+            alert("Payment Successful!");
+        }
+
+        function openDeposit() {
+            let amount = prompt("Enter amount to Top Up:");
+            if(amount) {
+                balance += parseFloat(amount);
+                localStorage.setItem('bankBalance', balance);
+                updateUI();
+            }
         }
     </script>
 </body>
 </html>
+
 
 
 
